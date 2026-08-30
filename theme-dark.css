@@ -1,0 +1,46 @@
+/* MICHELLE RELAYZE — DARK / SATURATED / REDUCED PALETTE */
+:root{
+  --noir:#080607;
+  --noir-2:#10090b;
+  --noir-3:#180c10;
+  --noir-4:#241116;
+
+  /* Un único acento cálido */
+  --gold:#c99a45;
+  --gold-hi:#f0c86f;
+  --gold-lo:#76511f;
+
+  /* El verde desaparece: sus usos pasan al mismo acento */
+  --emerald:#c99a45;
+  --emerald-2:#f0c86f;
+
+  --blush:#d9b9a6;
+  --ink:#f2ece3;
+  --muted:#9a8d86;
+
+  --line:rgba(201,154,69,.24);
+  --line-soft:rgba(201,154,69,.11);
+}
+
+/* Menos contaminación de color en luces y overlays */
+.hero-glow{
+  background:
+    radial-gradient(720px 480px at 78% 38%,rgba(201,154,69,.075),transparent 65%),
+    radial-gradient(900px 620px at 18% 20%,rgba(201,154,69,.045),transparent 62%),
+    radial-gradient(1200px 800px at 50% 115%,rgba(24,12,16,.92),transparent 70%);
+}
+
+#preloader{
+  background:linear-gradient(180deg,var(--noir) 0%,var(--noir-2) 100%);
+}
+
+#nav.is-scrolled{
+  background:rgba(8,6,7,.91);
+}
+
+#mnav{
+  background:rgba(8,6,7,.98);
+}
+
+/* Evita verdes residuales escritos directamente */
+.brand-mark b{color:var(--gold-hi)}
