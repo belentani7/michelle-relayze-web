@@ -1,0 +1,120 @@
+name: Enhance Michelle editorial experience
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  enhance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply editorial enhancements
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          if '<!-- MICHELLE-EDITORIAL-V2 -->' in s:
+              print('Enhancements already applied.')
+              raise SystemExit(0)
+
+          # GSAP: use the mature animation engine without changing the existing visual language.
+          s = s.replace(
+              '<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:ital,wght@0,300..700;1,300..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">',
+              '<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:ital,wght@0,300..700;1,300..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">\n<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>'
+          )
+
+          # Replace the technical GitHub section with an editorial source/archive experience.
+          start = s.index('<!-- ═══ 08 · GITHUB ═══ -->')
+          end = s.index('</section>', start) + len('</section>')
+          github = '''<!-- ═══ 08 · SOURCE / ARCHIVE ═══ -->
+<section id="github" class="section alt" aria-labelledby="gh-title">
+  <div class="wrap">
+    <header class="sec-head" data-reveal>
+      <span class="sec-ghost" aria-hidden="true">08</span>
+      <p class="sec-eyebrow">08 · Source / Archive</p>
+      <h2 class="sec-title" id="gh-title">Detrás de la imagen · <em>hay una historia</em></h2>
+    </header>
+
+    <div class="gh-grid">
+      <div class="gh-copy" data-reveal="left">
+        <h3>The woman <em>behind the crown</em></h3>
+        <p>
+          Hay una persona detrás de cada título. Antes de la corona, antes del escenario y antes de las cámaras,
+          está Michelle: una mujer construida por lugares, encuentros, trabajo y sueños que todavía siguen creciendo.
+        </p>
+        <p>
+          Su historia también está hecha de sensibilidad, comunidad y gratitud. De aprender a escuchar,
+          de encontrar fuerza sin perder la ternura y de entender que ser visible también significa abrir espacio para otras personas.
+        </p>
+        <div class="gh-btns">
+          <a class="btn btn-solid" href="https://github.com/belentani7/michelle-relayze-web" target="_blank" rel="noopener">✦ Ver el archivo</a>
+          <a class="btn" href="https://www.instagram.com/michelle_relayze/" target="_blank" rel="noopener">Instagram ↗</a>
+        </div>
+      </div>
+
+      <div class="term" data-reveal="right" aria-label="Archivo editorial de Michelle">
+        <div class="term-bar" aria-hidden="true">
+          <b></b><b></b><b></b><span>michelle — private archive</span>
+        </div>
+        <div class="term-body">
+          <p class="tl-c"># identity</p>
+          <p class="tl-x">Michelle Relayze</p>
+          <p class="tl-c"># beyond the titles</p>
+          <p class="tl-x">kindness / courage / community</p>
+          <p class="tl-c"># places that became chapters</p>
+          <p class="tl-x">Lima → Uruguay → Florence → Barcelona → São Paulo</p>
+          <p class="tl-c"># what remains</p>
+          <p class="tl-x">the people / the memories / the work</p>
+          <p class="tl-c"># archive status</p>
+          <p class="tl-x">OPEN — STILL BECOMING</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>'''
+          s = s[:start] + github + s[end:]
+
+          # Make the quote area explicitly editorial rather than presenting generated lines as quotations.
+          qstart = s.index('<!-- ═══ 07 · QUOTES ═══ -->')
+          qend = s.index('</section>', qstart) + len('</section>')
+          quotes = '''<!-- ═══ 07 · NOTES ═══ -->
+<section id="quotes" class="section" aria-labelledby="q-title">
+  <div class="wrap">
+    <h2 id="q-title" class="skip-link" style="position:absolute;clip-path:inset(50%)">Notas editoriales</h2>
+    <span class="q-mark" aria-hidden="true">“</span>
+    <div class="q-stage" aria-live="polite">
+      <blockquote id="quote-text">La corona es parte de la historia. No es toda la historia.</blockquote>
+    </div>
+    <p class="q-foot"><span id="quote-idx">1 / 6</span> — Notas editoriales</p>
+    <div class="q-dots" id="quote-dots" role="tablist" aria-label="Notas editoriales"></div>
+  </div>
+</section>'''
+          s = s[:qstart] + quotes + s[qend:]
+
+          # Replace the old direct-quote data with clearly editorial, non-attributed lines.
+          s = s.replace("'Si naciera de nuevo, pediría vivir lo mismo otra vez, porque ya aprendí a luchar.',\n      'Mi pasión es trabajar y alimentar mi alma.',\n      'En Barcelona estoy en casa: tengo trabajo, novio y una comunidad que me ama y respeta.',\n      'No quiero ningún regalo; simplemente que se nos respete.',\n      'Gracias a ustedes, cumplí mi sueño de ser reina.',\n      'Beauty is seen, energy is felt.'",
+              "'La corona es parte de la historia. No es toda la historia.',\n      'Hay fuerza en poder seguir siendo tierna.',\n      'Ser visible también puede significar abrir espacio para otras.',\n      'Una historia también se construye con las personas que nos acompañan.',\n      'La belleza puede llamar la atención; la humanidad hace que alguien permanezca.',\n      'Still becoming — todavía creciendo.'")
+
+          # Add a gentle GSAP layer after the existing application bootstrapping.
+          marker = '<!-- MICHELLE-EDITORIAL-V2 -->'
+          enhancement = f'''\n{marker}\n<style>\n  .editorial-soft {{ opacity:.78; }}\n  .term {{ will-change:transform; }}\n  @media (max-width: 760px) {{ .term {{ margin-top:18px; }} }}\n</style>\n<script>\n(() => {{\n  if (!window.gsap || !window.ScrollTrigger) return;\n  gsap.registerPlugin(ScrollTrigger);\n  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;\n\n  gsap.utils.toArray('[data-reveal]').forEach((el) => {{\n    const fromX = el.dataset.reveal === 'left' ? -34 : el.dataset.reveal === 'right' ? 34 : 0;\n    gsap.fromTo(el,\n      {{ autoAlpha: 0, y: 30, x: fromX }},\n      {{ autoAlpha: 1, y: 0, x: 0, duration: 1.05, ease: 'power3.out', scrollTrigger: {{ trigger: el, start: 'top 86%', once: true }} }}\n    );\n  }});\n\n  gsap.utils.toArray('.section').forEach((section) => {{\n    const ghost = section.querySelector('.sec-ghost');\n    if (!ghost) return;\n    gsap.to(ghost, {{ yPercent: -18, ease: 'none', scrollTrigger: {{ trigger: section, start: 'top bottom', end: 'bottom top', scrub: true }} }});\n  }});\n\n  gsap.utils.toArray('.term').forEach((term) => {{\n    gsap.to(term, {{ y: -12, ease: 'none', scrollTrigger: {{ trigger: term, start: 'top bottom', end: 'bottom top', scrub: 1.2 }} }});\n  }});\n}})();\n</script>\n'''
+          s = s.replace('</body>', enhancement + '</body>')
+
+          p.write_text(s, encoding='utf-8')
+          print('Editorial V2 applied.')
+      - name: Commit generated changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "feat: Michelle editorial heart and GSAP experience"
+          git push
