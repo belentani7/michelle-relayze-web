@@ -44,3 +44,11 @@
 
 /* Evita verdes residuales escritos directamente */
 .brand-mark b{color:var(--gold-hi)}
+
+/* Pulido: menos ruido, más editorial */
+.hero-title{letter-spacing:-.02em}
+.sec-title{letter-spacing:-.015em}
+.btn{border-radius:1px}
+.g-frame{border-radius:2px}
+.laureate{border-radius:2px}
+#foot{background:linear-gradient(180deg,var(--noir) 0%,var(--noir-2) 40%,#050304 100%)}
