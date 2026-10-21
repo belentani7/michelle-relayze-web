@@ -22,6 +22,9 @@ for (const id of anchors) {
 for (const m of html.matchAll(/<a\b[^>]*target=["']_blank["'][^>]*>/gi)) {
   assert.match(m[0], /rel=["'][^"']*noopener/i, 'external tab missing noopener');
 }
+const socialImage = html.match(/<meta\\s+property="og:image"\\s+content="([^"]+)"/i)?.[1];
+assert.equal(socialImage, 'https://michelle-relayze-web.vercel.app/images/hero.jpg', 'social image must use canonical Vercel asset');
+assert.ok(existsSync(resolve(root, 'images/hero.jpg')), 'social image must exist in the repository');
 assert.match(html, /<section\s+id="musica"/, 'music chapter must be present');
 assert.match(html, /id="burger"[^>]*aria-controls="mnav"/, 'mobile navigation needs aria-controls');
 assert.doesNotMatch(html, /<section\s+id="github"/, 'developer tutorial must not be in the artist site');
