@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://michelle-relayze-web.vercel.app/sitemap.xml

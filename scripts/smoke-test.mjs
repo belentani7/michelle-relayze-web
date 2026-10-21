@@ -30,4 +30,13 @@ assert.match(html, /id="burger"[^>]*aria-controls="mnav"/, 'mobile navigation ne
 assert.doesNotMatch(html, /<section\s+id="github"/, 'developer tutorial must not be in the artist site');
 assert.doesNotMatch(html, /new GitHubExporter\(\)/, 'deleted UI must not be initialized');
 assert.match(html, /prefers-reduced-motion\s*:\s*reduce/, 'reduced motion must be supported');
+const site = 'https://michelle-relayze-web.vercel.app/';
+assert.match(html, /<link rel="canonical" href="https:\/\/michelle-relayze-web\.vercel\.app\/"/, 'missing canonical URL');
+assert.match(html, /<meta name="robots" content="index, follow, max-image-preview:large"/, 'missing crawl directive');
+assert.match(html, /<meta name="twitter:card" content="summary_large_image"/, 'social preview card must be configured');
+assert.ok(existsSync(resolve(root, 'favicon.svg')), 'missing brand favicon');
+const robots = readFileSync(resolve(root, 'robots.txt'), 'utf8');
+const sitemap = readFileSync(resolve(root, 'sitemap.xml'), 'utf8');
+assert.ok(robots.includes('Sitemap: ' + site + 'sitemap.xml'), 'robots sitemap does not match canonical domain');
+assert.ok(sitemap.includes('<loc>' + site + '</loc>'), 'sitemap and canonical must match');
 console.log('Michelle smoke OK:', assetPaths.length, 'local assets and', anchors.length, 'section links checked');
