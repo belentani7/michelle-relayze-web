@@ -1524,32 +1524,48 @@ class Preloader {
     this.count = document.getElementById('pl-count');
     this.bar = document.getElementById('pl-bar-fill');
     this.onDone = onDone;
+    this.finished = false;
   }
   start(){
     if (Motion.reduced || !this.el) return this.finish(true);
     const t0 = performance.now(), dur = 1500;
     const tick = (now) => {
+      if (this.finished) return;
       const p = Math.min((now - t0) / dur, 1);
       const eased = 1 - Math.pow(1 - p, 3);
       const v = Math.round(eased * 100);
-      this.count.textContent = String(v).padStart(3, '0');
-      this.bar.style.transform = 'scaleX(' + eased + ')';
+      if (this.count) this.count.textContent = String(v).padStart(3, '0');
+      if (this.bar) this.bar.style.transform = 'scaleX(' + eased + ')';
       if (p < 1) requestAnimationFrame(tick);
       else setTimeout(() => this.finish(false), 220);
     };
     requestAnimationFrame(tick);
   }
   finish(instant){
-    if (instant){
+    if (this.finished) return;
+    if (instant || !this.el){
+      this.finished = true;
       this.el && this.el.remove();
       this.onDone();
       return;
     }
     document.body.classList.add('loader-done');
-    this.el.addEventListener('transitionend', () => {
+    let timer;
+    const complete = () => {
+      if (this.finished) return;
+      this.finished = true;
+      clearTimeout(timer);
+      this.el.removeEventListener('transitionend', onTransition);
       this.el.remove();
       this.onDone();
-    }, { once: true });
+    };
+    const onTransition = (event) => {
+      if (event.target === this.el && event.propertyName === 'transform') complete();
+    };
+    this.el.addEventListener('transitionend', onTransition);
+    // A disabled transition, tab suspension or browser quirk must never
+    // leave an invisible overlay intercepting access to the portfolio.
+    timer = setTimeout(complete, 1400);
   }
 }
 
@@ -1899,19 +1915,17 @@ class Shaft {
 /* ---------- App ---------- */
 class App {
   static init(){
-    new ImageGuard();
-    new Cursor();
-    new Nav();
-    new Reveals();
-    new Quotes();
-    new Lightbox();
-    new Shaft();
-    const year = document.getElementById('footer-year');
-    if (year) year.textContent = String(new Date().getFullYear());
-
+    // Start the independent entry sequence before optional visual modules.
+    // A broken decorative component must not strand the visitor behind it.
     new Preloader(() => {
       document.body.classList.add('is-loaded');
     }).start();
+    for (const Module of [ImageGuard, Cursor, Nav, Reveals, Quotes, Lightbox, Shaft]){
+      try { new Module(); }
+      catch (error) { console.error('Sección visual opcional no disponible:', Module.name, error); }
+    }
+    const year = document.getElementById('footer-year');
+    if (year) year.textContent = String(new Date().getFullYear());
   }
 }
 document.addEventListener('DOMContentLoaded', App.init);
