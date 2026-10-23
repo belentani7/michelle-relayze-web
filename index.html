@@ -620,13 +620,16 @@ html.js [data-reveal="right"]{transform:translateX(34px)}
 .q-foot{margin-top:34px;font:400 11px var(--mono);letter-spacing:.18em;color:var(--muted)}
 .q-dots{display:flex;justify-content:center;gap:12px;margin-top:22px}
 .q-dots button{
-  width:26px;height:14px;display:grid;place-items:center;
+  width:44px;height:44px;display:grid;place-items:center;
 }
 .q-dots button::after{
   content:"";width:6px;height:6px;transform:rotate(45deg);
   border:1px solid var(--gold-lo);transition:background .35s,border-color .35s;
 }
 .q-dots button.is-on::after{background:var(--gold);border-color:var(--gold)}
+.q-toggle{display:block;margin:12px auto 0;padding:10px 18px;min-height:44px;
+  border:1px solid var(--line);color:var(--ink);font:500 12px var(--sans);letter-spacing:.04em}
+.q-toggle:hover,.q-toggle:focus-visible{border-color:var(--gold);color:var(--gold-hi)}
 
 /* ---------- 16 · GITHUB ---------- */
 .gh-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(30px,5vw,70px);align-items:start}
@@ -1261,11 +1264,12 @@ html.js [data-reveal="right"]{transform:translateX(34px)}
   <div class="wrap">
     <h2 id="q-title" class="skip-link" style="position:absolute;clip-path:inset(50%)">Frases de Michelle</h2>
     <span class="q-mark" aria-hidden="true">“</span>
-    <div class="q-stage" aria-live="polite">
+    <div class="q-stage" aria-live="off">
       <blockquote id="quote-text">Si naciera de nuevo, pediría vivir lo mismo otra vez, porque ya aprendí a luchar.</blockquote>
     </div>
     <p class="q-foot"><span id="quote-idx">1 / 6</span> — Michelle Relayze</p>
-    <div class="q-dots" id="quote-dots" role="tablist" aria-label="Frases"></div>
+    <div class="q-dots" id="quote-dots" role="group" aria-label="Seleccionar frase"></div>
+    <button id="quote-toggle" class="q-toggle" type="button" aria-pressed="false">Pausar rotación</button>
   </div>
 </section>
 
@@ -1681,28 +1685,50 @@ class Quotes {
     this.text = document.getElementById('quote-text');
     this.idx = document.getElementById('quote-idx');
     this.dots = document.getElementById('quote-dots');
+    this.stage = document.querySelector('.q-stage');
+    this.toggleButton = document.getElementById('quote-toggle');
+    this.timer = null;
+    this.paused = Motion.reduced;
+    this.hovered = false;
+    this.focused = false;
     this.build();
-    if (!Motion.reduced) this.timer = setInterval(() => this.go(this.i + 1), 5200);
-    const sec = document.getElementById('quotes');
-    sec.addEventListener('mouseenter', () => this.timer && clearInterval(this.timer));
-    sec.addEventListener('mouseleave', () => {
-      if (Motion.reduced || this.timer) return;
-      this.timer = setInterval(() => this.go(this.i + 1), 5200);
+    this.toggleButton.hidden = Motion.reduced;
+    this.toggleButton.addEventListener('click', () => {
+      this.paused = !this.paused;
+      this.toggleButton.setAttribute('aria-pressed', String(this.paused));
+      this.toggleButton.textContent = this.paused ? 'Reanudar rotación' : 'Pausar rotación';
+      this.syncTimer();
     });
+    const sec = document.getElementById('quotes');
+    sec.addEventListener('mouseenter', () => { this.hovered = true; this.syncTimer(); });
+    sec.addEventListener('mouseleave', () => { this.hovered = false; this.syncTimer(); });
+    sec.addEventListener('focusin', () => { this.focused = true; this.syncTimer(); });
+    sec.addEventListener('focusout', e => {
+      if (!sec.contains(e.relatedTarget)){ this.focused = false; this.syncTimer(); }
+    });
+    document.addEventListener('visibilitychange', () => this.syncTimer());
+    this.syncTimer();
+  }
+  syncTimer(){
+    if (this.timer !== null){ clearInterval(this.timer); this.timer = null; }
+    if (!this.paused && !this.hovered && !this.focused && !document.hidden){
+      this.timer = setInterval(() => this.go(this.i + 1), 5200);
+    }
   }
   build(){
     this.data.forEach((_, n) => {
       const b = document.createElement('button');
-      b.setAttribute('aria-label', 'Frase ' + (n + 1));
-      b.addEventListener('click', () => this.go(n));
+      b.setAttribute('aria-label', 'Frase ' + (n + 1) + ' de ' + this.data.length);
+      b.addEventListener('click', () => this.go(n, true));
       this.dots.appendChild(b);
     });
     this.paint();
   }
-  go(n){
+  go(n, manual = false){
     const next = (n + this.data.length) % this.data.length;
     if (next === this.i) return;
     this.i = next;
+    this.stage.setAttribute('aria-live', manual ? 'polite' : 'off');
     if (Motion.reduced){ this.paint(); return; }
     this.text.classList.add('out');
     setTimeout(() => { this.paint(); this.text.classList.remove('out'); }, 420);
@@ -1710,10 +1736,12 @@ class Quotes {
   paint(){
     this.text.textContent = this.data[this.i];
     this.idx.textContent = (this.i + 1) + ' / ' + this.data.length;
-    [...this.dots.children].forEach((d, n) => d.classList.toggle('is-on', n === this.i));
+    [...this.dots.children].forEach((d, n) => {
+      d.classList.toggle('is-on', n === this.i);
+      d.setAttribute('aria-current', String(n === this.i));
+    });
   }
 }
-
 /* ---------- Lightbox ---------- */
 class Lightbox {
   constructor(){
