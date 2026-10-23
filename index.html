@@ -1265,7 +1265,7 @@ html.js [data-reveal="right"]{transform:translateX(34px)}
       <blockquote id="quote-text">Si naciera de nuevo, pediría vivir lo mismo otra vez, porque ya aprendí a luchar.</blockquote>
     </div>
     <p class="q-foot"><span id="quote-idx">1 / 6</span> — Michelle Relayze</p>
-    <div class="q-dots" id="quote-dots" role="tablist" aria-label="Frases"></div>
+    <div class="q-dots" id="quote-dots" role="group" aria-label="Elegir frase"></div>
   </div>
 </section>
 
@@ -1665,19 +1665,48 @@ class Quotes {
     this.text = document.getElementById('quote-text');
     this.idx = document.getElementById('quote-idx');
     this.dots = document.getElementById('quote-dots');
+    this.timer = null;
+    this.hovered = false;
+    this.focused = false;
+    this.sec = document.getElementById('quotes');
     this.build();
-    if (!Motion.reduced) this.timer = setInterval(() => this.go(this.i + 1), 5200);
-    const sec = document.getElementById('quotes');
-    sec.addEventListener('mouseenter', () => this.timer && clearInterval(this.timer));
-    sec.addEventListener('mouseleave', () => {
-      if (Motion.reduced || this.timer) return;
-      this.timer = setInterval(() => this.go(this.i + 1), 5200);
+    this.sec.addEventListener('mouseenter', () => {
+      this.hovered = true;
+      this.stopRotation();
     });
+    this.sec.addEventListener('mouseleave', () => {
+      this.hovered = false;
+      this.startRotation();
+    });
+    this.sec.addEventListener('focusin', () => {
+      this.focused = true;
+      this.stopRotation();
+    });
+    this.sec.addEventListener('focusout', event => {
+      if (this.sec.contains(event.relatedTarget)) return;
+      this.focused = false;
+      this.startRotation();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.stopRotation();
+      else this.startRotation();
+    });
+    this.startRotation();
+  }
+  startRotation(){
+    if (Motion.reduced || this.timer !== null || this.hovered || this.focused || document.hidden) return;
+    this.timer = setInterval(() => this.go(this.i + 1), 5200);
+  }
+  stopRotation(){
+    if (this.timer === null) return;
+    clearInterval(this.timer);
+    this.timer = null;
   }
   build(){
     this.data.forEach((_, n) => {
       const b = document.createElement('button');
       b.setAttribute('aria-label', 'Frase ' + (n + 1));
+      b.setAttribute('aria-pressed', 'false');
       b.addEventListener('click', () => this.go(n));
       this.dots.appendChild(b);
     });
@@ -1694,7 +1723,11 @@ class Quotes {
   paint(){
     this.text.textContent = this.data[this.i];
     this.idx.textContent = (this.i + 1) + ' / ' + this.data.length;
-    [...this.dots.children].forEach((d, n) => d.classList.toggle('is-on', n === this.i));
+    [...this.dots.children].forEach((d, n) => {
+      const selected = n === this.i;
+      d.classList.toggle('is-on', selected);
+      d.setAttribute('aria-pressed', String(selected));
+    });
   }
 }
 
