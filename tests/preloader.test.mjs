@@ -37,6 +37,7 @@ function fixture(reduced = false) {
   return {
     loader,
     events: callbacks,
+    get pendingTimers() { return timers.size; },
     get stats() { return { done, removed, loaderDone }; },
     runTimers() { for (const [id, callback] of [...timers]) { timers.delete(id); callback(); } },
     fireTransition(event) { callbacks.get("transitionend")?.(event); },
@@ -56,6 +57,15 @@ test("normal transition closes the overlay exactly once", () => {
   f.loader.finish(false);
   assert.deepEqual(f.stats, { done: 1, removed: 1, loaderDone: 1 });
 });
+test("repeated finish while exiting registers only one fallback and one completion", () => {
+  const f = fixture();
+  f.loader.finish(false);
+  f.loader.finish(false);
+  assert.equal(f.pendingTimers, 1, "duplicate finish must not allocate another timeout");
+  assert.equal(f.stats.loaderDone, 1, "exit CSS class is applied once");
+  f.runTimers();
+  assert.deepEqual(f.stats, { done: 1, removed: 1, loaderDone: 1 });
+});
 test("missing transitionend still releases visitor via bounded fallback", () => {
   const f = fixture();
   f.loader.finish(false);
@@ -72,7 +82,10 @@ test("reduced motion directly removes the loader and does not start animation", 
 });
 test("preloader starts before optional visual modules and does not mix Belentani brand", () => {
   const app = html.slice(html.indexOf("class App {"));
-  assert.ok(app.indexOf("new Preloader(") < app.indexOf("new ImageGuard()") || app.includes("for (const Module of [ImageGuard"));
+  const preloaderStart = app.indexOf("new Preloader(");
+  const optionalModules = app.indexOf("for (const Module of [ImageGuard");
+  assert.ok(preloaderStart >= 0 && optionalModules > preloaderStart,
+    "entry sequence must precede every optional visual module");
   assert.match(app, /catch \(error\)/);
   assert.match(html, /Michelle Relayze/);
 });
