@@ -1529,12 +1529,13 @@ class Preloader {
     this.bar = document.getElementById('pl-bar-fill');
     this.onDone = onDone;
     this.finished = false;
+    this.finishing = false;
   }
   start(){
     if (Motion.reduced || !this.el) return this.finish(true);
     const t0 = performance.now(), dur = 1500;
     const tick = (now) => {
-      if (this.finished) return;
+      if (this.finished || this.finishing) return;
       const p = Math.min((now - t0) / dur, 1);
       const eased = 1 - Math.pow(1 - p, 3);
       const v = Math.round(eased * 100);
@@ -1546,13 +1547,15 @@ class Preloader {
     requestAnimationFrame(tick);
   }
   finish(instant){
-    if (this.finished) return;
+    if (this.finished || this.finishing) return;
     if (instant || !this.el){
       this.finished = true;
       this.el && this.el.remove();
       this.onDone();
       return;
     }
+    // Prevent duplicate listeners/timeouts while the exit transition is pending.
+    this.finishing = true;
     document.body.classList.add('loader-done');
     let timer;
     const complete = () => {
