@@ -14,7 +14,10 @@ for (const asset of assetPaths) {
   assert.ok(existsSync(resolve(root, decodeURIComponent(asset))), 'missing asset: ' + asset);
 }
 
-const allIds = [...html.matchAll(/\bid=["']([^"']+)["']/gi)].map(m => m[1]);
+// The interactive code-wall contains HTML examples as JavaScript strings;
+// only markup before the first real <script> is part of the page structure.
+const documentMarkup = html.split(/<script\b/i, 1)[0];
+const allIds = [...documentMarkup.matchAll(/\bid=["']([^"']+)["']/gi)].map(m => m[1]);
 const ids = new Set(allIds);
 assert.equal(ids.size, allIds.length, 'duplicate HTML IDs break anchor navigation and ARIA references');
 const anchors = [...html.matchAll(/<a\b[^>]*?\bhref=["']#([^"']+)["']/gi)].map(m => m[1]);
