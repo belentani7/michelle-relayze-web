@@ -14,7 +14,9 @@ for (const asset of assetPaths) {
   assert.ok(existsSync(resolve(root, decodeURIComponent(asset))), 'missing asset: ' + asset);
 }
 
-const ids = new Set([...html.matchAll(/\bid=["']([^"']+)["']/gi)].map(m => m[1]));
+const allIds = [...html.matchAll(/\bid=["']([^"']+)["']/gi)].map(m => m[1]);
+const ids = new Set(allIds);
+assert.equal(ids.size, allIds.length, 'duplicate HTML IDs break anchor navigation and ARIA references');
 const anchors = [...html.matchAll(/<a\b[^>]*?\bhref=["']#([^"']+)["']/gi)].map(m => m[1]);
 for (const id of anchors) {
   assert.ok(ids.has(id), 'anchor target missing: #' + id);
