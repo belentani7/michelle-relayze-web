@@ -14,9 +14,9 @@ for (const asset of assetPaths) {
   assert.ok(existsSync(resolve(root, decodeURIComponent(asset))), 'missing asset: ' + asset);
 }
 
-// The interactive code-wall contains HTML examples as JavaScript strings;
-// only markup before the first real <script> is part of the page structure.
-const documentMarkup = html.split(/<script\b/i, 1)[0];
+// The code-wall contains sample HTML embedded in JavaScript string literals.
+// Remove complete script elements (including JSON-LD) before inspecting DOM IDs.
+const documentMarkup = html.replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, '');
 const allIds = [...documentMarkup.matchAll(/\bid=["']([^"']+)["']/gi)].map(m => m[1]);
 const ids = new Set(allIds);
 assert.equal(ids.size, allIds.length, 'duplicate HTML IDs break anchor navigation and ARIA references');
