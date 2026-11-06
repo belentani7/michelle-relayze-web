@@ -1,5 +1,8 @@
 # michelle-relayze-web
 
+<p><img src="https://img.shields.io/badge/dependabot-enabled-025e8c?logo=dependabot&style=flat-square" alt="Dependabot">
+  <img src="https://img.shields.io/website?url=https%3A%2F%2Fbelentani7.github.io%2Fmichelle-relayze-web%2F&label=demo&style=flat-square&color=2bb673" alt="demo live"></p>
+
 Web personal de Michelle Relayze.
 
 ## Qué es
