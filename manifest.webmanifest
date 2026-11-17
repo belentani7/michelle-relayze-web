@@ -1,0 +1,8 @@
+{
+  "name": "Michelle Relayze Web",
+  "short_name": "Michelle Rel",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0b0f",
+  "theme_color": "#0b0b0f"
+}

@@ -765,3 +765,5 @@ body.in-ella::-webkit-scrollbar-thumb{ background: #cbb9a8; border-color: var(--
   .shaft-wall-l, .shaft-wall-r{ transform: none }
   .foot-whisper i{ animation: none }
 }
+
+@media print{body{background:#fff;color:#000}a[href]::after{content:" (" attr(href) ")"}}
